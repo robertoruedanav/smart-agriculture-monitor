@@ -1,10 +1,14 @@
 # Smart Agriculture Monitor
 
-A solar-powered IoT monitoring system designed for precision agriculture. The device continuously measures soil moisture, soil temperature, ambient temperature and humidity, transmitting telemetry through an NB-IoT network to a cloud platform for remote monitoring.
+Autonomous IoT system for agricultural monitoring aimed at efficient irrigation management in citrus crops[cite: 1, 2].
 
-The project has been developed around the Seeed Studio XIAO ESP32-C6 and is optimized for autonomous outdoor operation with ultra-low power consumption.
+## Project Status
 
-> **Current status:** Prototype completed and deployed in the field. The hardware is fully operational and sensor acquisition works correctly. NB-IoT communication is still under debugging after field deployment.
+**Version:** 1.0.0  
+**Status:** Final prototype deployed in the field[cite: 1, 2]  
+**Reference Location:** Almassora, Castelló[cite: 1, 2]  
+
+The system measures soil moisture and temperature from two soil probes, as well as ambient temperature and humidity[cite: 1, 2]. Data is transmitted to a cloud platform via a SIM7070G cellular modem, and Deep Sleep is utilized to minimize power consumption[cite: 1, 2].
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/1867d891-9a4f-42f5-8e89-9db010226c25" width="350" alt="Foto del Sensor 1">
@@ -12,255 +16,144 @@ The project has been developed around the Seeed Studio XIAO ESP32-C6 and is opti
   <img src="https://github.com/user-attachments/assets/6e71adc1-9956-45c8-982f-e83d969d333d" width="350" alt="Foto del Sensor 2">
 </p>
 
----
 
-# Features
+## Features
 
-- Solar-powered autonomous operation
-- Ultra-low power design using ESP32 Deep Sleep
-- Industrial Modbus RTU communication over RS485
-- Dual industrial soil sensors
-- Ambient temperature and humidity monitoring
-- NB-IoT cellular connectivity
-- Cloud data visualization
-- Modular architecture for future irrigation automation
+- XIAO ESP32-C6 as the main controller[cite: 1, 2].
+- Two industrial soil moisture and temperature probes via RS485 / Modbus-RTU[cite: 1, 2].
+- DHT22 environmental sensor[cite: 1, 2].
+- SIM7070G cellular modem for cellular connectivity[cite: 1, 2].
+- Hologram IoT SIM[cite: 1, 2].
+- HTTP transmission via TCP socket to Thinger.io[cite: 1, 2].
+- Powered by a 3W solar panel and an integrated 4000 mAh battery[cite: 1, 2].
+- Peripheral power switching via relay and MOSFET[cite: 1, 2].
+- RTC memory to preserve measurements between cycles[cite: 1, 2].
+- Periodic 20-minute cycle with Deep Sleep[cite: 1, 2].
 
----
+## Architecture
 
-# Hardware
+```text
+                 3 W Solar Panel
+                       │
+               4000 mAh Battery
+                       │
+                 XL6019 / 5 V
+                       │
+                XIAO ESP32-C6
+          ┌────────────┼─────────────┐
+          │            │             │
+        RS485         UART          GPIO
+          │            │             │
+   ┌──────┴──────┐  SIM7070G       DHT22
+   │             │      │
+Probe 1       Probe 2  LTE Network
+                            │
+                        Internet
+                            │
+                       Thinger.io
+```[cite: 1, 2]
 
-| Component | Description |
-|-----------|-------------|
-| Seeed Studio XIAO ESP32-C6 | Main microcontroller |
-| SIM7070G | NB-IoT / LTE Cat-M modem |
-| 2x UNSEN600 RS485 Sensors | Soil moisture and temperature |
-| DHT22 | Ambient temperature and humidity |
-| MAX3485 | RS485 transceiver |
-| XL6019 Step-Up Converter | 5V power regulation |
-| Solar panel | 3W |
-| Integrated Battery | 4000 mAh |
-| Relay Module | Power switching |
-| MOSFET | Sensor power management |
+## Operating Cycle
 
----
-
-# System Architecture
-
-```
-                 Solar Panel
-                      │
-                Battery (4000mAh)
-                      │
-                XL6019 Step-Up
-                      │
-              XIAO ESP32-C6
-          ┌───────────┴───────────┐──────────────┐
-          │                       │              │
-      RS485 Bus               UART            Analog Read
-          │                       │              │
-  2x UNSEN600 Sensors       SIM7070G            DHT22
-          │                       │
-      Soil Data             NB-IoT Network
-                                  │
-                             Thinger.io Cloud
-                                  │
-                          Future Raspberry Pi
-                                  │
-                             Water Pump Relay
-```
-
----
-
-# Technologies
-
-- ESP32-C6
-- Arduino Framework
-- C++
-- Modbus RTU
-- RS485
-- NB-IoT
-- AT Commands
-- Deep Sleep
-- UART
-- Thinger.io
-- Hologram SIM
-- Low Power Design
-
----
-
-# Software Design
-
-The firmware follows a single execution cycle optimized for minimum energy consumption.
-
-```
-Wake Up
-
-↓
-
-Power Sensors
-
-↓
-
+```text
+Wake-up
+   ↓
+Power peripherals
+   ↓
+Initialize sensors and modem
+   ↓
 Read DHT22
+   ↓
+Read Modbus Probe 1
+   ↓
+Read Modbus Probe 2
+   ↓
+Register / Check network
+   ↓
+Build JSON payload
+   ↓
+HTTP POST over TCP
+   ↓
+Close socket and power off peripherals
+   ↓
+Deep Sleep for 20 min
+```[cite: 1, 2]
 
-↓
+## Modbus Sensors
 
-Read RS485 Sensors
+The probes are connected in parallel on the RS485 bus[cite: 1, 2]. To avoid Modbus collisions, each sensor must have a unique identifier[cite: 1, 2].
 
-↓
+The report documents changing one of the sensors from address `0x01` to `0x02` using[cite: 1, 2]:
 
-Connect NB-IoT
+```text
+01 06 07 D0 00 02 B2 DB
+```[cite: 1, 2]
 
-↓
+Register `0x07D0` corresponds to the sensor's Modbus ID according to the project documentation[cite: 1, 2].
 
-Upload Data
+The documented reading uses function `0x03` and two consecutive registers[cite: 1, 2]. Received values are interpreted with a scale factor of `0.1` as described in the implementation[cite: 1, 2].
 
-↓
+## Pinout
 
-Sleep Modem
+The report contains two distinct pin descriptions across its explanatory sections[cite: 1, 2]. For this reason, **a single assignment is not silently forced**[cite: 1, 2]. The firmware configuration table centralizes the pins so they can be adjusted to match the actual prototype wiring[cite: 1, 2].
 
-↓
+Edit `firmware/include/config.h` before compiling[cite: 1, 2].
 
-Power Off Sensors
+## IoT Platform
 
-↓
+The final report describes sending a JSON payload via HTTP over TCP to Thinger.io[cite: 1, 2]. The firmware in this version maintains that architecture[cite: 1, 2].
 
-Deep Sleep (20 minutes)
-```
+Credentials and endpoints are not included in the repository[cite: 1, 2]. They must be configured via `config.h` or an equivalent mechanism prior to use[cite: 1, 2].
 
-The `loop()` function is intentionally left empty since every measurement cycle is executed inside `setup()` before entering Deep Sleep.
+## Power Consumption and Documented Results
 
----
+The report details stable operation with transmissions every 20 minutes and approximately 1.5 kB per transmission[cite: 1, 2]. This translates to roughly 150 kB/day and 4.25 MB/month, with an estimated SIM cost of ~2.5 USD/month under the described conditions[cite: 1, 2].
 
-# Communication
+## Repository Structure
 
-## Soil Sensors
-
-- Protocol: Modbus RTU
-- Physical Layer: RS485
-- Transceiver: MAX3485
-- Two sensors connected in parallel
-- Individual Modbus Slave IDs
-
-The firmware manually builds Modbus frames and parses the received registers.
-
----
-
-## Cellular Network
-
-Communication is performed using:
-
-- SIM7070G
-- NB-IoT
-- UART AT Commands
-
-The ESP32 communicates directly with the modem by sending AT commands to:
-
-- Register on the network
-- Activate PDP context
-- Open TCP socket
-- Send HTTP POST requests
-- Close connection
-
----
-
-# Power Optimization
-
-One of the project's main goals is minimizing power consumption.
-
-Implemented techniques include:
-
-- ESP32 Deep Sleep
-- Modem Sleep Mode
-- Sensor power switching
-- MOSFET-controlled peripherals
-- Relay-controlled 5V devices
-- RTC memory for preserving previous measurements
-- Solar-powered battery charging
-
-The device wakes up every **20 minutes**, performs all measurements, uploads data, and immediately returns to Deep Sleep.
-
----
-
-# Cloud Platform
-
-Telemetry is sent directly to **Thinger.io** through raw HTTP POST requests over the NB-IoT modem.
-
-Collected variables include:
-
-- Soil moisture (Sensor 1)
-- Soil temperature (Sensor 1)
-- Soil moisture (Sensor 2)
-- Soil temperature (Sensor 2)
-- Ambient temperature
-- Ambient humidity
-
----
-
-# Challenges
-
-Several engineering challenges were addressed during development:
-
-- Selecting an ultra-low-power architecture
-- Providing enough UART interfaces for simultaneous peripherals
-- Implementing industrial RS485 communication
-- Changing Modbus slave addresses
-- Optimizing battery consumption
-- Integrating NB-IoT connectivity
-- Designing a fully autonomous solar-powered device
-
----
-
-# Current Status
-
-✅ Hardware completed
-
-✅ PCB and enclosure assembled
-
-✅ Solar power system operational
-
-✅ RS485 communication working
-
-✅ Modbus protocol implemented
-
-✅ Deep Sleep optimization completed
-
-✅ Cloud platform configured
-
-⚠️ Field deployment completed
-
-⚠️ NB-IoT communication under debugging in rural coverage conditions
-
----
-
-# Future Improvements
-
-- Automatic irrigation control
-- Raspberry Pi irrigation gateway
-- MQTT communication
-- OTA firmware updates
-- LoRaWAN version
-- Local SD card backup
-- Battery monitoring
-- Weather forecast integration
-
----
-
-# Repository Structure
-
-```
-Smart-Agriculture-Monitor/
-
+```text
+smart-agriculture-monitor/
 ├── firmware/
+│   ├── include/
+│   │   ├── config.h
+│   │   ├── modbus.h
+│   │   ├── modem.h
+│   │   └── telemetry.h
+│   └── src/
+│       ├── main.cpp
+│       ├── modbus.cpp
+│       ├── modem.cpp
+│       └── telemetry.cpp
+│   └── platformio.ini
 ├── docs/
+│   ├── architecture.md
+│   ├── field-deployment.md
+│   ├── modbus.md
+│   └── power-management.md
 ├── hardware/
-├── images/
-├── README.md
-└── LICENSE
-```
+│   ├── pinout.md
+│   └── wiring.md
+├── tests/
+│   └── test_modbus_crc.cpp
+├── LICENSE
+└── README.md
+```[cite: 1, 2]
 
----
+## Getting Started
 
-# Author
+1. Adjust the pins in `firmware/include/config.h` to match your hardware prototype[cite: 1, 2].
+2. Enter your APN, credentials, and cloud service endpoint[cite: 1, 2].
+3. Confirm that both probes have different Modbus IDs[cite: 1, 2].
+4. Compile using PlatformIO[cite: 1, 2].
+5. Test first without enabling Deep Sleep[cite: 1, 2].
+6. Validate sensor readings and modem responses[cite: 1, 2].
+7. Validate the HTTP POST on Thinger.io[cite: 1, 2].
+8. Enable the 20-minute cycle and perform a field test[cite: 1, 2].
 
-Industrial IoT Project developed using ESP32-C6, RS485, NB-IoT and low-power embedded design for precision agriculture.
+## Documented Future Improvements
+
+The report proposes the future adoption of NB-IoT and switching the transport layer to UDP[cite: 1, 2]. This possibility is not part of the validated LTE operation of the final project[cite: 1, 2].
+
+## License
+
+MIT. See `LICENSE`[cite: 1, 2].
