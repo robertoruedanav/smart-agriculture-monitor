@@ -1,14 +1,8 @@
 # Smart Agriculture Monitor
 
-Autonomous IoT system for agricultural monitoring aimed at efficient irrigation management in citrus crops[cite: 1, 2].
+Autonomous IoT system for agricultural monitoring aimed at efficient irrigation management in citrus crops
 
-## Project Status
-
-**Version:** 1.0.0  
-**Status:** Final prototype deployed in the field[cite: 1, 2]  
-**Reference Location:** Almassora, Castelló[cite: 1, 2]  
-
-The system measures soil moisture and temperature from two soil probes, as well as ambient temperature and humidity[cite: 1, 2]. Data is transmitted to a cloud platform via a SIM7070G cellular modem, and Deep Sleep is utilized to minimize power consumption[cite: 1, 2].
+The system measures soil moisture and temperature from two soil probes, as well as ambient temperature and humidity. Data is transmitted to a cloud platform via a SIM7070G cellular modem, and Deep Sleep is utilized to minimize power consumption.
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/1867d891-9a4f-42f5-8e89-9db010226c25" width="350" alt="Foto del Sensor 1">
