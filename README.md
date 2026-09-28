@@ -1,4 +1,3 @@
-<img width="746" height="1600" alt="Thniger io Dashboard" src="https://github.com/user-attachments/assets/2e03eb4b-382e-4119-baff-0756560f1d91" />
 # Smart Agriculture Monitor
 
 Autonomous IoT system for agricultural monitoring aimed at efficient irrigation management in citrus crops
