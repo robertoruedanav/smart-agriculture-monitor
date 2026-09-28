@@ -9,7 +9,7 @@ The system measures soil moisture and temperature from two soil probes, as well 
   <img src="https://github.com/user-attachments/assets/1867d891-9a4f-42f5-8e89-9db010226c25" width="350" alt="Foto del Sensor 1">
   &nbsp;&nbsp;&nbsp;&nbsp;
   <img src="https://github.com/user-attachments/assets/6e71adc1-9956-45c8-982f-e83d969d333d" width="350" alt="Foto del Sensor 2">
-<img width="746" height="1600" alt="Thniger io Dashboard" src="https://github.com/user-attachments/assets/dacd25cc-1d1b-458d-bb76-d93c26436a30" />
+<img width="350" alt="Thniger io Dashboard" src="https://github.com/user-attachments/assets/dacd25cc-1d1b-458d-bb76-d93c26436a30" />
 </p>
 
 
